@@ -50,8 +50,8 @@ export const command = async (req, res) => {
     const contracts = (await esi.getCorporationContracts()) as any;
     const contractInfo = contracts.map(
       contract =>
-        `Contract from ${contract.start_system_id} to ${
-          contract.end_system_id
+        `Contract from ${contract.start_location_id} to ${
+          contract.end_location_id
         }. Volume: ${contract.volume}m3. Reward: ${contract.reward} isk`
     );
     await got(response_url, {
