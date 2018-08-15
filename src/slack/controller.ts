@@ -48,6 +48,12 @@ export const command = async (req, res) => {
     const esi = new ESI(accessToken);
     await esi.getCharacter();
     const contracts = (await esi.getCorporationContracts()) as any;
+    const contractInfo = contracts.map(
+      contract =>
+        `Contract from ${contract.start_system_id} to ${
+          contract.end_system_id
+        }. Volume: ${contract.volume}m3. Reward: ${contract.reward} isk`
+    );
     await got(response_url, {
       method: "POST",
       headers: {
@@ -56,7 +62,9 @@ export const command = async (req, res) => {
       },
       body: JSON.stringify({
         response_type: "in_channel",
-        text: `There are currently ${contracts.length} contracts pending.`
+        text: `There are currently ${
+          contracts.length
+        } contracts pending. \n ${contractInfo.join("\n")}`
       })
     });
   } catch (error) {
