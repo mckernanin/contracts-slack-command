@@ -49,10 +49,12 @@ export const command = async (req, res) => {
     await esi.getCharacter();
     const contracts = (await esi.getCorporationContracts()) as any;
     const contractInfo = contracts.map(
-      contract =>
-        `Contract from ${contract.start_location_id} to ${
-          contract.end_location_id
-        }. Volume: ${contract.volume}m3. Reward: ${contract.reward} isk`
+      ({ start_location_id, end_location_id, volume, reward }) =>
+        `Contract from ${
+          start_location_id === 60003760 ? "Jita 4-4" : start_location_id
+        } to ${
+          end_location_id === 1023721530696 ? "Auga Fortizar" : end_location_id
+        }. Volume: ${volume}m3. Reward: ${reward} isk`
     );
     await got(response_url, {
       method: "POST",
