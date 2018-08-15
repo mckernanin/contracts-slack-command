@@ -21,6 +21,12 @@ interface TokenValues {
   exp: number;
 }
 
+/**
+ * Give the user a url with authentication to use to configure slack webhooks
+ *
+ * @param req
+ * @param res
+ */
 export const setup = (req, res) => {
   const { jwt } = req.query;
   res.send(`
@@ -38,6 +44,12 @@ export const setup = (req, res) => {
   `);
 };
 
+/**
+ * Slack command handler
+ *
+ * @param req
+ * @param res
+ */
 export const command = async (req, res) => {
   const { response_url } = req.body;
   const { jwt } = req.query;

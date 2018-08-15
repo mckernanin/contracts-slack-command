@@ -1,7 +1,9 @@
 import { create } from "simple-oauth2";
 import { verify } from "jsonwebtoken";
 import config from "../config";
-
+/**
+ * Interface for JWT
+ */
 interface TokenValues {
   token: {
     access_token: string;
@@ -37,6 +39,9 @@ export const oauth2 = create({
  */
 export const redirectUri = `${config.redirectUrl}/v1/authentication/oauth`;
 
+/**
+ * oauth scopes
+ */
 export const scope = "esi-contracts.read_corporation_contracts.v1";
 
 /**
@@ -62,10 +67,13 @@ export const getToken = async (code: string) => {
   return token;
 };
 
+/**
+ * Check whether a token has expired, and if it has try to refresh it.
+ * @param token
+ */
 export const checkAccessToken = async (token: TokenValues) => {
   let accessToken = oauth2.accessToken.create(token);
 
-  // Check if the token is expired. If expired it is refreshed.
   if (accessToken.expired()) {
     try {
       accessToken = await accessToken.refresh();

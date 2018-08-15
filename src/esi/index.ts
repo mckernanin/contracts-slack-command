@@ -49,9 +49,9 @@ export default class ESIRequest {
   }
 
   /**
-   * Get current logged in character
+   * Get current logged in character, and its affiliations
    */
-  async getCharacter() {
+  async getCharacter(): Promise<void> {
     const { body: character }: { body: CharacterObject } = await got(
       "https://login.eveonline.com/oauth/verify",
       {
@@ -69,7 +69,10 @@ export default class ESIRequest {
     this.affiliations = affiliations;
   }
 
-  async getCorporationContracts() {
+  /**
+   * Get all contracts for current character's corporation
+   */
+  async getCorporationContracts(): Promise<Object> {
     const [{ corporation_id: corporationId }] = this.affiliations;
     let contracts = await this.call(
       `latest/corporations/${corporationId}/contracts`
