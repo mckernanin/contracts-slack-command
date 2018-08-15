@@ -34,7 +34,7 @@ export const setup = (req, res) => {
     }
   </style>
   Use the following url in slack for the slash command:
-  <div>http://localhost:1337/v1/slack/command?jwt=${jwt}</div>
+  <div>${config.redirectUrl}/v1/slack/command?jwt=${jwt}</div>
   `);
 };
 

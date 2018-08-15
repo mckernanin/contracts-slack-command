@@ -9,7 +9,7 @@
     "start": "nodemon",
     "now-start": "node ./dist/index.js",
     "build": "tsc",
-    "now": "cp ../yarn.lock . && now && now alias && rm yarn.lock"
+    "now": "now && now alias"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
