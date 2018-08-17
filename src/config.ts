@@ -11,7 +11,7 @@ interface EnvironmentVariables {
   env: string;
   port: number;
   jwtSecret: string;
-  jwtExpire: number;
+  jwtExpire: number | string;
 }
 
 const variables: EnvironmentVariables = {
@@ -21,7 +21,7 @@ const variables: EnvironmentVariables = {
   env: orEmptyString(process.env.NODE_ENV),
   port: numberOrDefault(process.env.PORT, 1337),
   jwtSecret: orEmptyString(process.env.JWT_SECRET),
-  jwtExpire: numberOrDefault(process.env.JWT_EXPIRE, 86400)
+  jwtExpire: process.env.JWT_EXPIRE || "1m"
 };
 
 export default variables;

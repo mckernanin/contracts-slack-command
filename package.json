@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "nodemon",
+    "debug": "ndb nodemon",
     "now-start": "node ./dist/index.js",
     "build": "tsc",
     "now": "now && now alias"
@@ -31,6 +32,7 @@
     "@types/morgan": "^1.7.35",
     "@types/simple-oauth2": "^2.2.0",
     "@types/typescript": "^2.0.0",
+    "ndb": "^1.0.23",
     "nodemon": "^1.18.3",
     "ts-node": "^7.0.1",
     "types-installer": "^1.4.0",

@@ -50,11 +50,11 @@ export const setup = (req, res) => {
  * @param req
  * @param res
  */
-export const command = async (req, res) => {
+export const command = async (req, res, next) => {
   const { response_url } = req.body;
   const { jwt } = req.query;
-  res.status(200).send("Request received.");
   try {
+    res.status(200).send("Request received.");
     const decoded = verify(jwt, config.jwtSecret) as any;
     const accessToken = await checkAccessToken(decoded.token);
     const esi = new ESI(accessToken);
@@ -90,6 +90,7 @@ export const command = async (req, res) => {
         text: "Sorry, that didn't work. Please try again."
       }
     });
+    console.dir(error);
   }
-  return;
+  return next("router");
 };
