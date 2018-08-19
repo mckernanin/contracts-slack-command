@@ -1,0 +1,16 @@
+{
+  "name": "eve-slack-contracts",
+  "env": {
+    "ESI_CLIENT": "",
+    "ESI_SECRET": "",
+    "REDIRECT_URL": "",
+    "JWT_SECRET": "",
+    "JWT_EXPIRE": "180d"
+  },
+  "scale": {
+    "sfo1": {
+      "min": 1,
+      "max": 1
+    }
+  }
+}
