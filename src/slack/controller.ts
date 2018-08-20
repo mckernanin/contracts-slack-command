@@ -1,38 +1,20 @@
+import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 import * as got from "got";
 import config from "../config";
-import ESI from "../esi";
+import ESI, { Contracts, Contract } from "../esi/contracts";
 import { checkAccessToken } from "../authentication/oauth";
-
-interface TokenValues {
-  token: {
-    access_token: string;
-  };
-  character: {
-    CharacterID: number;
-    CharacterName: string;
-    ExpiresOn: string;
-    Scopes: string;
-    TokenType: string;
-    CharacterOwnerHash: string;
-    IntellectualProperty: string;
-  };
-  iat: number;
-  exp: number;
-}
+import { toISK, toM3, toLocationName } from "../utils/formatting";
 
 /**
  * Give the user a url with authentication to use to configure slack webhooks
- *
- * @param req
- * @param res
  */
-export const setup = (req, res) => {
+export const setup = (req: Request, res: Response) => {
   const { jwt } = req.query;
   res.send(`
   <style>
     div {
-      font-family: 'Fira Code', sans-serif;
+      font-family: 'Fira Code', 'Menlo', monospace;
       max-width: 90vw;
       margin: 0 auto;
       overflow-wrap: break-word;
@@ -44,53 +26,75 @@ export const setup = (req, res) => {
   `);
 };
 
+const formatContractResponse = (
+  { start_location_id, end_location_id, volume, reward }: Contract,
+  locations
+): string =>
+  `Contract from ${toLocationName(
+    start_location_id,
+    locations
+  )} to ${toLocationName(end_location_id, locations)}. Volume: ${toM3(
+    volume
+  )} m3. Reward: ${toISK(reward)}`;
+
 /**
  * Slack command handler
- *
- * @param req
- * @param res
  */
-export const command = async (req, res, next) => {
+export const command = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { response_url } = req.body;
   const { jwt } = req.query;
+  const isSlackRequest = req.method === "POST";
   try {
-    res.status(200).send("Request received.");
+    if (isSlackRequest) {
+      res.status(200).send("Request received.");
+    }
     const decoded = verify(jwt, config.jwtSecret) as any;
     const accessToken = await checkAccessToken(decoded.token);
     const esi = new ESI(accessToken);
-    await esi.getCharacter();
-    const contracts = (await esi.getCorporationContracts()) as any;
-    const contractInfo = contracts.map(
-      ({ start_location_id, end_location_id, volume, reward }) =>
-        `Contract from ${
-          start_location_id === 60003760 ? "Jita 4-4" : start_location_id
-        } to ${
-          end_location_id === 1023721530696 ? "Auga Fortizar" : end_location_id
-        }. Volume: ${volume}m3. Reward: ${reward} isk`
-    );
-    await got(response_url, {
-      method: "POST",
-      headers: {
-        accept: "text/html",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        response_type: "in_channel",
-        text: `There are currently ${
-          contracts.length
-        } contracts pending. \n ${contractInfo.join("\n")}`
-      })
-    });
+    const contracts = await esi.getCorporationContracts();
+    const locations = await esi.lookupLocations(contracts);
+    if (isSlackRequest) {
+      await got(response_url, {
+        method: "POST",
+        headers: {
+          accept: "text/html",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          response_type: "in_channel",
+          text: `There are currently ${
+            contracts.length
+          } contracts pending. \n ${contracts
+            .map(contract => formatContractResponse(contract, locations))
+            .join("\n")}`
+        })
+      });
+    } else {
+      res.status(200).json({
+        contracts,
+        formattedContracts: contracts.map(contract =>
+          formatContractResponse(contract, locations)
+        ),
+        locations
+      });
+    }
   } catch (error) {
-    await got(response_url, {
-      method: "POST",
-      json: true,
-      body: {
-        response_type: "ephemeral",
-        text: "Sorry, that didn't work. Please try again."
-      }
-    });
-    console.dir(error);
+    if (isSlackRequest) {
+      await got(response_url, {
+        method: "POST",
+        json: true,
+        body: {
+          response_type: "ephemeral",
+          text: `Sorry, that didn't work. Please try again. \n ${error.message}`
+        }
+      });
+    } else {
+      console.dir(error);
+    }
   }
   return next("router");
 };

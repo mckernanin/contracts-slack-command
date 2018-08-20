@@ -1,6 +1,6 @@
 import * as got from "got";
 
-interface CharacterObject {
+export interface CharacterObject {
   CharacterID: number;
   CharacterName: string;
   ExpiresOn: string;
@@ -10,7 +10,7 @@ interface CharacterObject {
   IntellectualProperty: string;
 }
 
-interface RequestOptions {
+export interface RequestOptions {
   headers: {
     Authorization: string;
   };
@@ -33,7 +33,7 @@ export default class ESIRequest {
    * @param path
    * @param options
    */
-  async call(path: string, options: object = {}) {
+  async call(path: string, options: object = {}): Promise<any> {
     const requestOptions: RequestOptions = {
       headers: {
         Authorization: `Bearer ${this.token}`
@@ -69,17 +69,28 @@ export default class ESIRequest {
     this.affiliations = affiliations;
   }
 
-  /**
-   * Get all contracts for current character's corporation
-   */
-  async getCorporationContracts(): Promise<Object> {
-    const [{ corporation_id: corporationId }] = this.affiliations;
-    let contracts = await this.call(
-      `latest/corporations/${corporationId}/contracts`
-    );
-    contracts = (contracts as any)
-      .filter(c => c.assignee_id === corporationId)
-      .filter(c => c.status === "outstanding");
-    return contracts;
+  async getNames(body: Array<number>) {
+    if (!body.length) {
+      return [];
+    }
+    const names = await this.call("v2/universe/names", {
+      method: "POST",
+      body
+    });
+    return names;
+  }
+
+  async getStructure(id: number) {
+    const structure = await this.call(`latest/universe/structures/${id}`);
+    return { id, name: structure.name, category: structure.category };
+  }
+
+  async getStructures(ids: Array<number>) {
+    if (!ids.length) {
+      return [];
+    }
+    const promises = ids.map(id => this.getStructure(id));
+    const structures = await Promise.all(promises);
+    return structures;
   }
 }
