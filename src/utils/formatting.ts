@@ -26,5 +26,10 @@ export const toISK = (amount: number): string =>
 export const toM3 = (amount: number): string =>
   currency.format(amount, m3Format);
 
-export const toLocationName = (locationId: number, locations) =>
-  locations.find(location => location.id === locationId);
+export const toLocationName = (locationId: number, locations) => {
+  const location = locations.find(location => location.id === locationId);
+  if (location) {
+    return location.structure.name;
+  }
+  return locationId;
+};

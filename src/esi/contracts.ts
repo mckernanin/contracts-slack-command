@@ -52,6 +52,6 @@ export default class ESIContracts extends ESIRequest {
       this.getNames(npc),
       this.getStructures(citadels)
     ]);
-    return { names, structures };
+    return [...names, ...structures];
   }
 }

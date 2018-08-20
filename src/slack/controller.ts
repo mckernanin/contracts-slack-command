@@ -4,7 +4,7 @@ import * as got from "got";
 import config from "../config";
 import ESI, { Contracts, Contract } from "../esi/contracts";
 import { checkAccessToken } from "../authentication/oauth";
-import { toISK, toM3 } from "../utils/formatting";
+import { toISK, toM3, toLocationName } from "../utils/formatting";
 
 /**
  * Give the user a url with authentication to use to configure slack webhooks
@@ -26,13 +26,14 @@ export const setup = (req: Request, res: Response) => {
   `);
 };
 
-const formatContractResponse = ({
-  start_location_id,
-  end_location_id,
-  volume,
-  reward
-}: Contract): string =>
-  `Contract from ${start_location_id} to ${end_location_id}. Volume: ${toM3(
+const formatContractResponse = (
+  { start_location_id, end_location_id, volume, reward }: Contract,
+  locations
+): string =>
+  `Contract from ${toLocationName(
+    start_location_id,
+    locations
+  )} to ${toLocationName(end_location_id, locations)}. Volume: ${toM3(
     volume
   )} m3. Reward: ${toISK(reward)}`;
 
@@ -55,7 +56,7 @@ export const command = async (
     const accessToken = await checkAccessToken(decoded.token);
     const esi = new ESI(accessToken);
     const contracts = await esi.getCorporationContracts();
-    // const locations = await esi.lookupLocations(contracts);
+    const locations = await esi.lookupLocations(contracts);
     if (isSlackRequest) {
       await got(response_url, {
         method: "POST",
@@ -68,15 +69,17 @@ export const command = async (
           text: `There are currently ${
             contracts.length
           } contracts pending. \n ${contracts
-            .map(formatContractResponse)
+            .map(contract => formatContractResponse(contract, locations))
             .join("\n")}`
         })
       });
     } else {
       res.status(200).json({
         contracts,
-        formattedContracts: contracts.map(formatContractResponse)
-        // locations
+        formattedContracts: contracts.map(contract =>
+          formatContractResponse(contract, locations)
+        ),
+        locations
       });
     }
   } catch (error) {
