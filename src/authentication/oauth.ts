@@ -4,7 +4,7 @@ import config from "../config";
 /**
  * Interface for JWT
  */
-interface TokenValues {
+export interface TokenValues {
   token: {
     access_token: string;
   };
@@ -42,7 +42,8 @@ export const redirectUri = `${config.redirectUrl}/v1/authentication/oauth`;
 /**
  * oauth scopes
  */
-export const scope = "esi-contracts.read_corporation_contracts.v1";
+export const scope =
+  "esi-contracts.read_corporation_contracts.v1 esi-universe.read_structures.v1";
 
 /**
  * EVE SSO Login URL
@@ -81,5 +82,6 @@ export const checkAccessToken = async (token: TokenValues) => {
       console.log("Error refreshing access token: ", error.message);
     }
   }
+  console.log(accessToken);
   return accessToken.token.access_token;
 };
