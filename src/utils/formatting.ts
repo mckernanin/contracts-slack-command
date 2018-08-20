@@ -29,7 +29,7 @@ export const toM3 = (amount: number): string =>
 export const toLocationName = (locationId: number, locations) => {
   const location = locations.find(location => location.id === locationId);
   if (location) {
-    return location.structure.name;
+    return location.name;
   }
   return locationId;
 };

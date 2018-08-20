@@ -82,7 +82,7 @@ export default class ESIRequest {
 
   async getStructure(id: number) {
     const structure = await this.call(`latest/universe/structures/${id}`);
-    return { id, structure };
+    return { id, name: structure.name, category: structure.category };
   }
 
   async getStructures(ids: Array<number>) {
